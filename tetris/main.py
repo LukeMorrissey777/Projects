@@ -13,8 +13,14 @@ from pygame.locals import (
     QUIT,
 )
 
-SCREEN_WIDTH = 250
+SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
+clock = pygame.time.Clock()
+blue = (0,0,100)
+green = (0,100,0)
+
+bright_blue = (0,0,255)
+bright_green = (0,150,0)
 
 PIECES = [LINE_P,S_P,Z_P,L_P,J_P,SQ_P,T_P]
 PIECE_COLORS = [(125, 60, 152),(176, 58, 46),(31, 97, 141),(241, 196, 15),(211, 84, 0),(23, 165, 137),(165, 23, 154)]
@@ -123,14 +129,131 @@ def checkRows():
                     block.rect.top += 25*(len(to_be_deleted)-i)
                     break
 
-        
+def drawTetris():
+    largeText = pygame.font.Font('freesansbold.ttf',115)
+    T_TextSurf, T_TextRect = text_objects("T", largeText,PIECE_COLORS[0])
+    T_TextRect.center = ((SCREEN_WIDTH/2)-125,(SCREEN_HEIGHT/4))
+    screen.blit(T_TextSurf, T_TextRect)
+ 
+    e_TextSurf, e_TextRect = text_objects("e", largeText,PIECE_COLORS[1])
+    e_TextRect.center = ((SCREEN_WIDTH/2)-66,(SCREEN_HEIGHT/4))
+    screen.blit(e_TextSurf, e_TextRect)
 
+    t_TextSurf, t_TextRect = text_objects("t", largeText,PIECE_COLORS[2])
+    t_TextRect.center = ((SCREEN_WIDTH/2)-15,(SCREEN_HEIGHT/4))
+    screen.blit(t_TextSurf, t_TextRect)
+
+    r_TextSurf, r_TextRect = text_objects("r", largeText,PIECE_COLORS[3])
+    r_TextRect.center = ((SCREEN_WIDTH/2)+35,(SCREEN_HEIGHT/4))
+    screen.blit(r_TextSurf, r_TextRect)
+
+    i_TextSurf, i_TextRect = text_objects("i", largeText,PIECE_COLORS[4])
+    i_TextRect.center = ((SCREEN_WIDTH/2)+75,(SCREEN_HEIGHT/4))
+    screen.blit(i_TextSurf, i_TextRect)
+
+    s_TextSurf, s_TextRect = text_objects("s", largeText,PIECE_COLORS[5])
+    s_TextRect.center = ((SCREEN_WIDTH/2)+130,(SCREEN_HEIGHT/4))
+    screen.blit(s_TextSurf, s_TextRect)
+
+
+def game_intro():
+
+    intro = True
+
+    while intro:
+        for event in pygame.event.get():
+            print(event)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        screen.fill((0,0,0))
+        drawTetris()
+
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+
+        if 150+100 > mouse[0] > 150 and 450+50 > mouse[1] > 450:
+            pygame.draw.rect(screen, bright_green,(150,450,100,50))
+            if click[0] == 1:
+                intro = False
+
+        else:
+            pygame.draw.rect(screen, green,(150,450,100,50))
+        
+        if 550+100 > mouse[0] > 550 and 450+50 > mouse[1] > 450:
+            pygame.draw.rect(screen, bright_blue,(550,450,100,50))
+            if click[0] == 1:
+                instruct()
+        else:
+            pygame.draw.rect(screen, blue,(550,450,100,50))
+
+        smallText = pygame.font.Font("freesansbold.ttf",20)
+        textSurf, textRect = text_objects("Start", smallText,(255,255,255))
+        textRect.center = ( (150+(100/2)), (450+(50/2)) )
+        screen.blit(textSurf, textRect)
+
+        textSurf, textRect = text_objects("Rules", smallText,(255,255,255))
+        textRect.center = ( (550+(100/2)), (450+(50/2)) )
+        screen.blit(textSurf, textRect)
+
+        pygame.display.update()
+        clock.tick(15)
+
+def instruct():
+    instruct = True
+    while instruct:
+        for event in pygame.event.get():
+            print(event)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        screen.fill((0,0,0))
+        drawTetris()
+
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+
+        medium_text = pygame.font.Font("freesansbold.ttf",50)
+        textSurf, textRect = text_objects("How to play:", medium_text,(255,255,255))
+        textRect.center = ( (SCREEN_WIDTH/2), (400) )
+        screen.blit(textSurf, textRect)
+        textSurf, textRect = text_objects("Press space to rotate", medium_text,(255,255,255))
+        textRect.center = ( (SCREEN_WIDTH/2), (400)+50 )
+        screen.blit(textSurf, textRect)
+        textSurf, textRect = text_objects("Use arrow keys to move block", medium_text,(255,255,255))
+        textRect.center = ( (SCREEN_WIDTH/2), (400)+100 )
+        screen.blit(textSurf, textRect)
+
+
+        if SCREEN_WIDTH/2+50 > mouse[0] > SCREEN_WIDTH/2-50 and 600+50 > mouse[1] > 600:
+            pygame.draw.rect(screen, bright_blue,(SCREEN_WIDTH/2-50,600,100,50))
+            if click[0] == 1:
+                return
+        else:
+            pygame.draw.rect(screen, blue,(SCREEN_WIDTH/2-50,600,100,50))
+
+        smallText = pygame.font.Font("freesansbold.ttf",20)
+        textSurf, textRect = text_objects("Back", smallText,(255,255,255))
+        textRect.center = ( (SCREEN_WIDTH/2), (600+(50/2)) )
+        screen.blit(textSurf, textRect)
+
+        pygame.display.update()
+        clock.tick(15)
+
+
+
+def text_objects(text, font, color):
+    textSurface = font.render(text, True, color)
+    return textSurface, textSurface.get_rect()
 
 pygame.init()
 screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
 bottom = pygame.sprite.Group()
 piece = Piece()
 running = True
+game_intro()
 while running:
     time.sleep(.02)
     turn +=1
