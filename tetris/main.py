@@ -48,7 +48,7 @@ class Block(pygame.sprite.Sprite):
             self.rect.move_ip(25, 0)
         if pressed_keys[K_DOWN] and turn % 10 == 1:
             self.rect.move_ip(0,25)
-        if self.rect.left < 0 or self.rect.right > SCREEN_WIDTH:
+        if self.rect.left < SCREEN_WIDTH/2-125 or self.rect.right > SCREEN_WIDTH/2+125:
             return -2
         if self.rect.bottom > SCREEN_HEIGHT:
             return -1
@@ -60,15 +60,19 @@ class Block(pygame.sprite.Sprite):
         
 
 class Piece():
-    def __init__(self):
-        self.piece_num = random.randint(0,6)
+    def __init__(self,num,nxt):
+        self.piece_num = num
         self.piece = pygame.sprite.Group()
         self.turnRotate = -10
         for i in range(4):
             for j in range(4):
                 if PIECES[self.piece_num][i][j] == 1:
-                    block = Block(self.piece_num,100+25*i,25*j)
-                    self.piece.add(block)
+                    if not nxt:
+                        block = Block(self.piece_num,SCREEN_WIDTH/2+25*i,25*j)
+                        self.piece.add(block)
+                    else:
+                        block = Block(self.piece_num,3*SCREEN_WIDTH/4+25*i+50,25*j+125)
+                        self.piece.add(block)
     def draw(self):
         for block in self.piece:
             screen.blit(block.surf, block.rect)
@@ -153,6 +157,32 @@ def drawTetris():
 
     s_TextSurf, s_TextRect = text_objects("s", largeText,PIECE_COLORS[5])
     s_TextRect.center = ((SCREEN_WIDTH/2)+130,(SCREEN_HEIGHT/4))
+    screen.blit(s_TextSurf, s_TextRect)
+
+def drawTetrisSmall():
+    smallText = pygame.font.Font('freesansbold.ttf',50)
+    T_TextSurf, T_TextRect = text_objects("T", smallText,PIECE_COLORS[0])
+    T_TextRect.center = (80,(SCREEN_HEIGHT/8))
+    screen.blit(T_TextSurf, T_TextRect)
+ 
+    e_TextSurf, e_TextRect = text_objects("e", smallText,PIECE_COLORS[1])
+    e_TextRect.center = (100,(SCREEN_HEIGHT/8))
+    screen.blit(e_TextSurf, e_TextRect)
+
+    t_TextSurf, t_TextRect = text_objects("t", smallText,PIECE_COLORS[2])
+    t_TextRect.center = (120,(SCREEN_HEIGHT/8))
+    screen.blit(t_TextSurf, t_TextRect)
+
+    r_TextSurf, r_TextRect = text_objects("r", smallText,PIECE_COLORS[3])
+    r_TextRect.center = (140,(SCREEN_HEIGHT/8))
+    screen.blit(r_TextSurf, r_TextRect)
+
+    i_TextSurf, i_TextRect = text_objects("i", smallText,PIECE_COLORS[4])
+    i_TextRect.center = (160,(SCREEN_HEIGHT/8))
+    screen.blit(i_TextSurf, i_TextRect)
+
+    s_TextSurf, s_TextRect = text_objects("s", smallText,PIECE_COLORS[5])
+    s_TextRect.center = (180,(SCREEN_HEIGHT/8))
     screen.blit(s_TextSurf, s_TextRect)
 
 
@@ -243,6 +273,14 @@ def instruct():
         clock.tick(15)
 
 
+def drawHorzGradientRect(start,end,x,y,w,h):
+    delta = [float(end[0]-start[0])/w,float(end[1]-start[1])/w,float(end[2]-start[2])/w]
+    for i in range(w):
+        try:
+            pygame.draw.rect(screen, (int(start[0]+i*delta[0]),int(start[1]+i*delta[1]),int(start[2]+i*delta[2])),(x+i,y,1,h))
+        except:
+            print((int(start[0]+i*delta[0]),int(start[1]+i*delta[1]),int(start[2]+i*delta[2])))
+
 
 def text_objects(text, font, color):
     textSurface = font.render(text, True, color)
@@ -251,9 +289,18 @@ def text_objects(text, font, color):
 pygame.init()
 screen = pygame.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
 bottom = pygame.sprite.Group()
-piece = Piece()
+piece = Piece(random.randint(0,6),False)
+nxt = random.randint(0,6)
+next_piece = Piece(nxt,True)
 running = True
 game_intro()
+screen.fill((0,0,0))
+pygame.draw.rect(screen, blue,(0,0,(SCREEN_WIDTH-250)/2,SCREEN_HEIGHT))
+drawHorzGradientRect((0,0,100),(100,0,0),0,0,(SCREEN_WIDTH-250)/2,SCREEN_HEIGHT)
+drawHorzGradientRect((100,0,0),(0,0,100),SCREEN_WIDTH/2+125,0,(SCREEN_WIDTH-250)/2,SCREEN_HEIGHT)
+
+pygame.draw.rect(screen, (0,0,0),(SCREEN_WIDTH/2+225,50,100,200))
+drawTetrisSmall()
 while running:
     time.sleep(.02)
     turn +=1
@@ -263,12 +310,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-
-    # Fill the screen with black
-    screen.fill((0,0,0))
+    pygame.draw.rect(screen, (0,0,0),(SCREEN_WIDTH/2+225,50,100,200))
+    pygame.draw.rect(screen, (0,0,0),(SCREEN_WIDTH/2-125,0,250,SCREEN_HEIGHT))
 
     # Draw the player on the screen
     piece.draw()
+    next_piece.draw()
 
     # Get all the keys currently pressed
     pressed_keys = pygame.key.get_pressed()
@@ -277,11 +324,15 @@ while running:
         screen.blit(entity.surf, entity.rect)
     
     if(piece.update(pressed_keys) == -1):
-        piece = Piece()
+        piece = Piece(nxt,False)
+        nxt = random.randint(0,6)
+        next_piece = Piece(nxt,True)
     for block in piece.piece:
         if pygame.sprite.spritecollideany(block,bottom):
             piece.collide()
-            piece = Piece()
+            piece = Piece(nxt,False)
+            nxt = random.randint(0,6)
+            next_piece = Piece(nxt,True)
             break
     
     # Flip the display
